@@ -2,7 +2,7 @@
   <div>
     <b-button-group class="actions" :vertical="vertical" :size="size" v-if="href">
       <b-button variant="danger" v-if="requiresAuth" :id="`popover-href-${id}-btn`" @click="handleAuthButton">
-        <b-icon-lock /> {{ $i18n.t('authentication.required') }}
+        <b-icon-lock /> Login Required <!--DX: Change message to login required -->
       </b-button>
       <b-button v-if="hasDownloadButton" :disabled="requiresAuth" v-bind="downloadProps" v-on="downloadEvents" variant="primary">
         <b-spinner v-if="loading" small variant="light" />
@@ -42,6 +42,7 @@ import { BIconBoxArrowUpRight, BIconDownload, BIconEye, BIconLock, BListGroup, B
 import Description from './Description.vue';
 import STAC from '../models/stac';
 import Utils, { browserProtocols, imageMediaTypes, mapMediaTypes } from '../utils';
+import Dx from '../dx';
 import { mapGetters, mapState } from 'vuex';
 import AssetActions from '../../assetActions.config';
 import LinkActions from '../../linkActions.config';
@@ -100,11 +101,11 @@ export default {
   },
   computed: {
     ...mapState(['pathPrefix', 'requestHeaders']),
-    ...mapGetters(['getRequestUrl']),
+    ...mapGetters(['getRequestUrl', 'isExternalUrl']),
     ...mapGetters('auth', ['isLoggedIn']),
     requiresAuth() {
-      return !this.isLoggedIn && this.auth.length > 0;
-    },
+      return !this.isLoggedIn && !this.isExternalUrl(this.href);// DX: Make the download button disabled if not logged in and 
+    },                                                          // is not an external URL 
     actions() {
       return Object.entries(this.isAsset ? AssetActions : LinkActions)
         .map(([id, plugin]) => new plugin(this.data, this, id))
@@ -166,7 +167,13 @@ export default {
       return {};
     },
     useAltDownloadMethod() {
-      if (!this.isBrowserProtocol || !window.isSecureContext) {
+      /****** DX: Added check: If asset URL is not same as the STAC server path, then do not download using altDownloadMethod
+       ****** and DX token flow because presumably the asset is open if it's not hidden behind the STAC `/assets/` endpoint.
+       ******/     
+      if (this.isExternalUrl(this.href)) {
+        return false;  
+      }  
+      else if (!this.isBrowserProtocol || !window.isSecureContext) {
         return false;
       }
       else if (typeof this.data.method === 'string' && this.method.toUpperCase() !== 'GET') {
@@ -255,6 +262,22 @@ export default {
         window.location.href = this.href;
       }
 
+      const collectionId = this.data.collection_id;
+      const link = Object.assign({}, this.data, { href: this.href });
+      const options = stacRequestOptions(this.$store, link);
+      const keycloakToken = options.headers["Authorization"].replace("Bearer ", "").trim();
+
+      /******** DX: Add code to get DX AAA token based on STAC Collection ID *****/
+      let dxAAAToken;
+
+      try {  
+        dxAAAToken = await Dx.getDxToken(collectionId, keycloakToken, this.$store.state);
+      } catch (error) {
+          this.$store.commit('showGlobalError', { error });
+          return;
+      }
+      /***************************************************************************/  
+
       try {
         this.loading = true;
         const StreamSaver = require('streamsaver-js');
@@ -265,6 +288,8 @@ export default {
 
         const link = Object.assign({}, this.data, {href: this.href});
         const options = stacRequestOptions(this.$store, link);
+        // DX: replace OIDC token with the recently obtained DX AAA token  
+        options.headers["Authorization"] = `Bearer ${dxAAAToken}`;
 
         // Convert from axios to fetch
         const url = options.url;
