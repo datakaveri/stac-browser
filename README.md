@@ -1,3 +1,36 @@
+----------------
+
+# To make this work with production GSX/GDI
+
+- Create a client on Keycloak for this application
+- In `config.js`, add the following to `authConfig`
+
+```json
+  authConfig: {
+    type: "openIdConnect",
+  openIdConnectUrl: 'https://<keycloak-URL>/auth/realms/<realm>/.well-known/openid-configuration',
+  oidcConfig: {
+    client_id: '<client-name>'
+  },},
+```
+- Add another block called `dxConfig` in `config.js`, which contains the DX URL and the DX catalogue base path
+
+```json
+dxConfig: {
+    dxUrl: "https://dx.ugix.org.in",
+    dxCatBasePath: "/ugix/cat/v1",
+    },
+```
+
+- Again in `config.js`, add the STAC server URL in `catalogUrl` (without trailing slash) and add the domain of the server in `allowedDomains`
+
+```json
+catalogUrl:"https://geoserver.dx.ugix.org.in/stac" ,
+...
+allowedDomains: ["geoserver.dx.ugix.org.in"],
+```
+----------------
+
 # STAC Browser
 
 This is a [Spatio-Temporal Asset Catalog (STAC)](https://github.com/radiantearth/stac-spec) browser for static catalogs.
