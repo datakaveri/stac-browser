@@ -243,6 +243,24 @@
           "$ref": "https://stac-extensions.github.io/authentication/v1.1.0/schema.json"
         }
       ]
+    },
+    "dxConfig": {
+      "type": [
+        "object"
+      ],
+      "properties": {
+        "dxUrl": {
+          "type": [
+            "string"
+          ],
+          "format": "uri"
+        },  
+        "dxCatBasePath": {
+          "type": [
+            "string"
+          ]
+        }
+      }
     }
   }
 }
