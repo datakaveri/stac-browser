@@ -11,7 +11,7 @@ export default class OIDC extends Auth {
     const oidcConfig = {
       authority: options.openIdConnectUrl.replace('/.well-known/openid-configuration', ''),
       client_id: 'stac-browser',
-      post_logout_redirect_uri: this.getRedirectUri('/auth/logout'),
+      post_logout_redirect_uri: this.getRedirectUri('/'),
       redirect_uri: this.getRedirectUri('/auth'),
       automaticSilentRenew: true
     };
