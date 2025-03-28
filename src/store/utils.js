@@ -1,4 +1,4 @@
-import axios from "axios";
+import apiClient from "../request.interceptor";
 import URI from "urijs";
 import Utils from "../utils";
 
@@ -53,7 +53,7 @@ export async function stacRequest(cx, link, axiosOptions = {}) {
   // Get options
   const options = stacRequestOptions(cx, link);
   // Execute the request
-  return await axios(Object.assign(options, axiosOptions));
+  return await apiClient(Object.assign(options, axiosOptions));
 }
 
 
