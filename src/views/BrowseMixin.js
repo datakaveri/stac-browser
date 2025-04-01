@@ -6,6 +6,7 @@ import { mapState, mapGetters } from "vuex";
 
 import { stacRequestOptions } from "../store/utils";
 import Dx from "../dx";
+import config from "../../config";
 
 export default {
   components: {
@@ -94,7 +95,7 @@ export default {
         let url = this.fromBrowserPath(path || "/");
         const collectionId = url?.split("collections/")?.[1]?.split("/")?.[0];
         const link = Object.assign({}, this.data, {
-          href: "https://geoserver.dx.geospatial.org.in/stac/collections/",
+          href: config.catalogUrl + "collections/",
         });
 
         console.log(link, this.$data);
