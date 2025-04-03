@@ -14,11 +14,7 @@ apiClient.interceptors.request.use(
 
   (config) => {
     const token = localStorage.getItem('token');
-    console.log("Interceptor : ", token);
-  
     const regex = /collections\/[a-f0-9-]+\/items\/[a-f0-9-]+/i;
-
-    console.log(config.url);
     if (regex.test(config.url)) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
