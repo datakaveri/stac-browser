@@ -98,10 +98,8 @@ export default {
           href: config.catalogUrl + "collections/",
         });
 
-        console.log(link, this.$data);
 
         const options = stacRequestOptions(this.$store, link);
-        console.log(options);
 
         const keycloakToken = options.headers["Authorization"]
           ?.replace("Bearer ", "")
@@ -118,7 +116,6 @@ export default {
               this.$store.state
             );
 
-            console.log(dxAAAToken);
             localStorage.setItem("token", dxAAAToken);
           } catch (error) {
             this.$store.commit("showGlobalError", { error });
