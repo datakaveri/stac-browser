@@ -109,6 +109,10 @@ export default function getStore(router) {
         cx.commit('setInProgress', false);
       },
       async requestLogout(cx) {
+        // Custom code start
+        sessionStorage.removeItem('dxAAAToken');
+        // Custom code over
+
         if (!cx.getters.isLoggedIn) {
           return;
         }

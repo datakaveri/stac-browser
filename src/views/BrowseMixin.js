@@ -115,8 +115,9 @@ export default {
               keycloakToken,
               this.$store.state
             );
-
-            localStorage.setItem("token", dxAAAToken);
+            // custom code start
+            sessionStorage.setItem("dxAAAToken", dxAAAToken);
+            // custom code end
           } catch (error) {
             this.$store.commit("showGlobalError", { error });
             return;

@@ -1,19 +1,19 @@
 <template>
   <div>
     <b-button-group class="actions" :vertical="vertical" :size="size" v-if="href">
-      <b-button variant="danger" v-if="requiresAuth" :id="`popover-href-${id}-btn`" @click="handleAuthButton">
-        <b-icon-lock /> Login Required <!--DX: Change message to login required -->
+      <b-button variant="danger" v-if="requiresAuth || requiresHref" :id="`popover-href-${id}-btn`" @click="handleAuthButton">
+        <b-icon-lock /> {{ loginButtonText }} <!--DX: Custom code for all the conditions for all the buttons -->
       </b-button>
-      <b-button v-if="hasDownloadButton" :disabled="requiresAuth" v-bind="downloadProps" v-on="downloadEvents" variant="primary">
+      <b-button v-if="!requiresAuth && hasDownloadButton && !requiresHref" :disabled="requiresHref" v-bind="downloadProps" v-on="downloadEvents" variant="primary">
         <b-spinner v-if="loading" small variant="light" />
-        <b-icon-box-arrow-up-right v-else-if="browserCanOpenFile" /> 
+        <b-icon-box-arrow-up-right v-else-if="browserCanOpenFile" />
         <b-icon-download v-else />
         {{ buttonText }}
       </b-button>
-      <CopyButton variant="primary" :copyText="href" :title="href">
+      <CopyButton variant="primary" :disabled="!isLoggedIn || requiresHref" :copyText="href" :title="href">
         {{ copyButtonText }}
       </CopyButton>
-      <b-button v-if="hasShowButton" @click="show" variant="primary">
+      <b-button v-if="hasShowButton" :disabled="!isLoggedIn || requiresHref" @click="show" variant="primary">
         <b-icon-eye class="mr-1" />
         <template v-if="isThumbnail">{{ $t('assets.showThumbnail') }}</template>
         <template v-else>{{ $t('assets.showOnMap') }}</template>
@@ -103,9 +103,17 @@ export default {
     ...mapState(['pathPrefix', 'requestHeaders']),
     ...mapGetters(['getRequestUrl', 'isExternalUrl']),
     ...mapGetters('auth', ['isLoggedIn']),
+
+    // Custom code start
     requiresAuth() {
-      return !this.isLoggedIn && !this.isExternalUrl(this.href);// DX: Make the download button disabled if not logged in and 
-    },                                                          // is not an external URL 
+      return !this.isLoggedIn && !this.isExternalUrl(this.href); // DX: Make the download button disabled if not logged in and 
+    },                                                           // is not an external URL
+
+    requiresHref() {
+      return this.href === '#'; // DX: Make the download button disabled if href is # 
+    },
+    // Custom code end
+
     actions() {
       return Object.entries(this.isAsset ? AssetActions : LinkActions)
         .map(([id, plugin]) => new plugin(this.data, this, id))
@@ -254,29 +262,26 @@ export default {
     copyButtonText() {
       let where = (!this.isBrowserProtocol && this.from) ? 'withSource' : 'generic';
       return this.$t(`assets.copyUrl.${where}`, {source: this.from});
-    }
+    },
+    // Custom code start
+    loginButtonText() {
+      if (this.requiresAuth) {
+        return this.$t('Login Required');
+      }
+      else if (this.href === '#') {
+        return this.$t('Access Denied');
+      }
+      
+      return this.$t(``);
+    },
+    // Custom code end
+
   },
   methods: {
     async altDownload() {
       if (!window.isSecureContext) {
         window.location.href = this.href;
       }
-
-      const collectionId = this.data.collection_id;
-      const link = Object.assign({}, this.data, { href: this.href });
-      const options = stacRequestOptions(this.$store, link);
-      const keycloakToken = options.headers["Authorization"].replace("Bearer ", "").trim();
-
-      /******** DX: Add code to get DX AAA token based on STAC Collection ID *****/
-      let dxAAAToken;
-
-      try {  
-        dxAAAToken = await Dx.getDxToken(collectionId, keycloakToken, this.$store.state);
-      } catch (error) {
-          this.$store.commit('showGlobalError', { error });
-          return;
-      }
-      /***************************************************************************/  
 
       try {
         this.loading = true;
@@ -288,8 +293,6 @@ export default {
 
         const link = Object.assign({}, this.data, {href: this.href});
         const options = stacRequestOptions(this.$store, link);
-        // DX: replace OIDC token with the recently obtained DX AAA token  
-        options.headers["Authorization"] = `Bearer ${dxAAAToken}`;
 
         // Convert from axios to fetch
         const url = options.url;

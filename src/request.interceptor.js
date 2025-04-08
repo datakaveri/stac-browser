@@ -13,15 +13,15 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
 
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('dxAAAToken');
     const regex = /collections\/[a-f0-9-]+\/items\/[a-f0-9-]+/i;
-    if (regex.test(config.url)) {
+    if (token !=null && regex.test(config.url)) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;
   },
   (error) => {
-    return Promise.reject(error);
+    console.log(error);
   }
 );
 
