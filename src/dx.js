@@ -122,6 +122,7 @@ export default class Dx {
     try {
       const data = await fetch(`${dx_url}/auth/v1/token`, authOptions);
       if (data.status >= 400) {
+        sessionStorage.removeItem('dxAAAToken');
         let msg;
         switch (data.status) {
           case 401:
@@ -136,7 +137,7 @@ export default class Dx {
             console.error(`DX AAA token request failure`, data);
             break;
         }
-        throw new Error(msg);
+        console.log(msg);
       }
 
       let json = await data.json();
@@ -144,10 +145,9 @@ export default class Dx {
         return json.results.accessToken;
       } else {
         console.error(`DX AAA token request failure`, data);
-        throw new Error("Failure in DX AAA token request");
       }
     } catch (error) {
-      throw error;
+      console.log(error);
     }
   }
 }

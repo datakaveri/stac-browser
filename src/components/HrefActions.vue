@@ -274,7 +274,7 @@ export default {
         return this.$t('Access Denied');
       }
       
-      return this.$t(`emty`);
+      return this.$t(``);
     },
     // Custom code end
 
