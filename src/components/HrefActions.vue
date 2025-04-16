@@ -1,19 +1,19 @@
 <template>
   <div>
     <b-button-group class="actions" :vertical="vertical" :size="size" v-if="href">
-      <b-button variant="danger" v-if="requiresAuth" :id="`popover-href-${id}-btn`" @click="handleAuthButton">
-        <b-icon-lock /> Login Required <!--DX: Change message to login required -->
+      <b-button v-b-tooltip.hover :title="isHrefHash ? 'Please create a request on GDI catalogue for access!' : 'Please log in to download the data'" variant="danger" v-if="requiresAuth || isHrefHash" :id="`popover-href-${id}-btn`" @click="handleAuthButton">
+        <b-icon-lock /> {{ loginButtonText }} <!--DX: Custom code for all the conditions for all the buttons -->
       </b-button>
-      <b-button v-if="hasDownloadButton" :disabled="requiresAuth" v-bind="downloadProps" v-on="downloadEvents" variant="primary">
+      <b-button v-if="!requiresAuth && hasDownloadButton && !isHrefHash" :disabled="isHrefHash" v-bind="downloadProps" v-on="downloadEvents" variant="primary">
         <b-spinner v-if="loading" small variant="light" />
-        <b-icon-box-arrow-up-right v-else-if="browserCanOpenFile" /> 
+        <b-icon-box-arrow-up-right v-else-if="browserCanOpenFile" />
         <b-icon-download v-else />
         {{ buttonText }}
       </b-button>
-      <CopyButton variant="primary" :copyText="href" :title="href">
+      <CopyButton variant="primary" :disabled="isHrefHash" :copyText="href" :title="href">
         {{ copyButtonText }}
       </CopyButton>
-      <b-button v-if="hasShowButton" @click="show" variant="primary">
+      <b-button v-if="hasShowButton" :disabled="isHrefHash" @click="show" variant="primary">
         <b-icon-eye class="mr-1" />
         <template v-if="isThumbnail">{{ $t('assets.showThumbnail') }}</template>
         <template v-else>{{ $t('assets.showOnMap') }}</template>
@@ -42,7 +42,6 @@ import { BIconBoxArrowUpRight, BIconDownload, BIconEye, BIconLock, BListGroup, B
 import Description from './Description.vue';
 import STAC from '../models/stac';
 import Utils, { browserProtocols, imageMediaTypes, mapMediaTypes } from '../utils';
-import Dx from '../dx';
 import { mapGetters, mapState } from 'vuex';
 import AssetActions from '../../assetActions.config';
 import LinkActions from '../../linkActions.config';
@@ -103,9 +102,17 @@ export default {
     ...mapState(['pathPrefix', 'requestHeaders']),
     ...mapGetters(['getRequestUrl', 'isExternalUrl']),
     ...mapGetters('auth', ['isLoggedIn']),
+
     requiresAuth() {
-      return !this.isLoggedIn && !this.isExternalUrl(this.href);// DX: Make the download button disabled if not logged in and 
-    },                                                          // is not an external URL 
+      return !this.isLoggedIn && this.auth.length > 0;  
+    },
+    // Custom code start
+
+    isHrefHash() {
+      return this.data.href === '#'; // DX: Make the download button disabled if href is # 
+    },
+    // Custom code end
+
     actions() {
       return Object.entries(this.isAsset ? AssetActions : LinkActions)
         .map(([id, plugin]) => new plugin(this.data, this, id))
@@ -254,29 +261,26 @@ export default {
     copyButtonText() {
       let where = (!this.isBrowserProtocol && this.from) ? 'withSource' : 'generic';
       return this.$t(`assets.copyUrl.${where}`, {source: this.from});
-    }
+    },
+    // Custom code start
+    loginButtonText() {
+      if (!this.isLoggedIn) {
+        return this.$t('Login Required');
+      }
+      else if (this.isHrefHash) {
+        return this.$t('Access Denied');
+      }
+      
+      return this.$t(`emty`);
+    },
+    // Custom code end
+
   },
   methods: {
     async altDownload() {
       if (!window.isSecureContext) {
         window.location.href = this.href;
       }
-
-      const collectionId = this.data.collection_id;
-      const link = Object.assign({}, this.data, { href: this.href });
-      const options = stacRequestOptions(this.$store, link);
-      const keycloakToken = options.headers["Authorization"].replace("Bearer ", "").trim();
-
-      /******** DX: Add code to get DX AAA token based on STAC Collection ID *****/
-      let dxAAAToken;
-
-      try {  
-        dxAAAToken = await Dx.getDxToken(collectionId, keycloakToken, this.$store.state);
-      } catch (error) {
-          this.$store.commit('showGlobalError', { error });
-          return;
-      }
-      /***************************************************************************/  
 
       try {
         this.loading = true;
@@ -288,8 +292,6 @@ export default {
 
         const link = Object.assign({}, this.data, {href: this.href});
         const options = stacRequestOptions(this.$store, link);
-        // DX: replace OIDC token with the recently obtained DX AAA token  
-        options.headers["Authorization"] = `Bearer ${dxAAAToken}`;
 
         // Convert from axios to fetch
         const url = options.url;

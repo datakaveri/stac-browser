@@ -86,7 +86,7 @@ export default class Dx {
     }
 
     const resource_item_policy = resource_item_arr[0].accessPolicy;
-    const resource_server_url = resource_item_arr[0].resourceServerRegUrl;
+    const resource_server_url = res_server_item_arr[0]['resourceServerRegURL'];
 
     let dx_token_req_body = {};
 
