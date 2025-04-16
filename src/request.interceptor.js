@@ -2,7 +2,7 @@ import config from "../config";
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: config["dxConfig"]["dxUrl"], // Change this to your API base URL
+  baseURL: config["dxConfig"]["dxUrl"],
   headers: {
     "Content-Type": "application/json",
   },

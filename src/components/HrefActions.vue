@@ -109,7 +109,6 @@ export default {
     // Custom code start
 
     isHrefHash() {
-      console.log(this.data.href);
       return this.data.href === '#'; // DX: Make the download button disabled if href is # 
     },
     // Custom code end
