@@ -249,13 +249,24 @@
         "object"
       ],
       "properties": {
-        "dxUrl": {
+        "dxCatUrl": {
           "type": [
             "string"
           ],
           "format": "uri"
         },  
         "dxCatBasePath": {
+          "type": [
+            "string"
+          ]
+        },
+        "dxAuthUrl": {
+          "type": [
+            "string"
+          ],
+          "format": "uri"
+        },  
+        "dxAuthBasePath": {
           "type": [
             "string"
           ]
