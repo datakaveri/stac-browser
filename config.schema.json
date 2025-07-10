@@ -265,11 +265,6 @@
             "string"
           ],
           "format": "uri"
-        },  
-        "dxAuthBasePath": {
-          "type": [
-            "string"
-          ]
         }
       }
     }

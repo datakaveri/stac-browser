@@ -119,7 +119,7 @@ export default class Dx {
     };
 
     try {
-      const data = await fetch(`${dx_url}/auth/v1/token`, authOptions);
+      const data = await fetch(`${dx_cat_url}/auth/v1/token`, authOptions);
       if (data.status >= 400) {
         sessionStorage.removeItem('dxAAAToken');
         let msg;
