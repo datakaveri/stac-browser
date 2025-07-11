@@ -25,13 +25,16 @@ export default class Dx {
     if (
       !("dxConfig" in config) ||
       !("dxCatUrl" in config.dxConfig) ||
-      !("dxCatBasePath" in config.dxConfig)
+      !("dxCatBasePath" in config.dxConfig)||
+      !("dxAuthUrl" in config.dxConfig)
     ) {
       console.error("Failed to download the asset - bad server configuration");
       throw new Error("Failed to download asset");
     }
 
     const dx_cat_url = config["dxConfig"]["dxCatUrl"];
+    const dx_auth_url = config["dxConfig"]["dxAuthUrl"];
+
     const dx_cat_base_path = config["dxConfig"]["dxCatBasePath"];
 
     let cat_relation_check;
@@ -119,7 +122,7 @@ export default class Dx {
     };
 
     try {
-      const data = await fetch(`${dx_cat_url}/auth/v1/token`, authOptions);
+      const data = await fetch(`${dx_auth_url}/auth/v1/token`, authOptions);
       if (data.status >= 400) {
         sessionStorage.removeItem('dxAAAToken');
         let msg;
