@@ -24,20 +24,23 @@ export default class Dx {
     }
     if (
       !("dxConfig" in config) ||
-      !("dxUrl" in config.dxConfig) ||
-      !("dxCatBasePath" in config.dxConfig)
+      !("dxCatUrl" in config.dxConfig) ||
+      !("dxCatBasePath" in config.dxConfig)||
+      !("dxAuthUrl" in config.dxConfig)
     ) {
       console.error("Failed to download the asset - bad server configuration");
       throw new Error("Failed to download asset");
     }
 
-    const dx_url = config["dxConfig"]["dxUrl"];
+    const dx_cat_url = config["dxConfig"]["dxCatUrl"];
+    const dx_auth_url = config["dxConfig"]["dxAuthUrl"];
+
     const dx_cat_base_path = config["dxConfig"]["dxCatBasePath"];
 
     let cat_relation_check;
     let dx_cat_response = {};
 
-    let dx_cat_relationship_query_url = `${dx_url}${dx_cat_base_path}/relationship?id=${collection_id}&rel=all`;
+    let dx_cat_relationship_query_url = `${dx_cat_url}${dx_cat_base_path}/relationship?id=${collection_id}&rel=all`;
 
     try {
       cat_relation_check = await fetch(dx_cat_relationship_query_url);
@@ -119,7 +122,7 @@ export default class Dx {
     };
 
     try {
-      const data = await fetch(`${dx_url}/auth/v1/token`, authOptions);
+      const data = await fetch(`${dx_auth_url}/auth/v1/token`, authOptions);
       if (data.status >= 400) {
         sessionStorage.removeItem('dxAAAToken');
         let msg;
