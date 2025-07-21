@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-button-group class="actions" :vertical="vertical" :size="size" v-if="href">
-      <b-button v-b-tooltip.hover :title="isLoggedIn ? (isHrefHash ? 'Please create a request on GDI catalogue for access!' : 'Download data' ): 'Please log in to download the data'" variant="danger" v-if="requiresAuth || isHrefHash" :id="`popover-href-${id}-btn`" @click="handleAuthButton">
+      <b-button v-b-tooltip.hover :title="isLoggedIn ? (isHrefHash ? 'Please create a request on catalogue for access!' : 'Download data' ): 'Please log in to download the data'" variant="danger" v-if="requiresAuth || isHrefHash" :id="`popover-href-${id}-btn`" @click="handleAuthButton">
         <b-icon-lock /> {{ loginButtonText }} <!--DX: Custom code for all the conditions for all the buttons -->
       </b-button>
       <b-button v-if="!requiresAuth && hasDownloadButton && !isHrefHash" :disabled="isHrefHash" v-bind="downloadProps" v-on="downloadEvents" variant="primary">
