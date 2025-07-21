@@ -2,7 +2,7 @@ import config from "../config";
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: config["dxConfig"]["dxAuthUrl"],
+  baseURL: config["dxConfig"]["dxCatUrl"],
   headers: {
     "Content-Type": "application/json",
   },
