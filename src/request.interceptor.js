@@ -1,8 +1,6 @@
-import config from "../config";
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: config["dxConfig"]["dxCatUrl"],
   headers: {
     "Content-Type": "application/json",
   },
@@ -14,7 +12,7 @@ apiClient.interceptors.request.use(
 
   (config) => {
     const token = sessionStorage.getItem('dxAAAToken');
-    const regex = /collections\/[a-f0-9-]+\/items\/[a-f0-9-]+/i;
+    const regex = /collections\/[a-f0-9-]+\/items\/.+/i;
     if (token !=null && token !='undefined' && regex.test(config.url)) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }else{
