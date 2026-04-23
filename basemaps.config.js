@@ -8,10 +8,16 @@ const XYZ = 'LTileLayer';
 
 const BASEMAPS = {
   earth: {
-    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    name: 'OpenStreetMap',
-    is: XYZ,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors.'
+    url: 'https://bhuvan-vec1.nrsc.gov.in/bhuvan/gwc/service/wms/',
+    is: 'TileWMS',
+    title: 'IndiaMaps',
+    attributions: '&copy; IndiaMaps',
+    projection: 'EPSG:4326',
+    params: {
+      LAYERS: 'india3',
+      FORMAT: 'image/png',
+      SRS: 'EPSG:4326',
+    }
   },
   europa: {
     baseUrl: 'https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/jupiter/europa_simp_cyl.map',
